@@ -12,9 +12,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = ''
-
-client = discord.Client()
-bot = commands.Bot('$')
+client = discord.Client(intents=discord.Intents.default())
+# = discord.Client()
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix='$', intents=intents)
 
 global betting
 global betteam
@@ -129,6 +131,73 @@ def findcurrentbet(json_object, name):
         if name == entry['name']:
             return entry['Current Bet']
 
+def findsumredbets():
+    currentredbets = []
+
+    for x in bank['user']:
+        if x['Current Bet'] > 0 and x['Current team'] == 'red':
+            currentredbets.append(x['Current Bet'])
+    print(currentredbets)
+    if currentredbets:
+        return sum(currentredbets)
+    else:
+        return 0
+
+def findnumredbets():
+    currentredbets = []
+
+    for x in bank['user']:
+        if x['Current Bet'] > 0 and x['Current team'] == 'red':
+            currentredbets.append(x['Current Bet'])
+    print(currentredbets)
+    return len(currentredbets)
+
+def findsumbluebets():
+    currentbluebets = []
+
+    for x in bank['user']:
+        if x['Current Bet'] > 0 and x['Current team'] == 'blue':
+            currentbluebets.append(x['Current Bet'])
+    print(currentbluebets)
+    if currentbluebets:
+        return sum(currentbluebets)
+    else:
+        return 0
+
+def findnumbluebets():
+    currentbluebets = []
+
+    for x in bank['user']:
+        if x['Current Bet'] > 0 and x['Current team'] == 'blue':
+            currentbluebets.append(x['Current Bet'])
+    print(currentbluebets)
+    return len(currentbluebets)
+
+def findcurrentpayout():
+    red_sum = findsumredbets()
+    blue_sum = findsumbluebets()
+    totalbets = red_sum + blue_sum
+
+    if red_sum > blue_sum:
+        if blue_sum > 0:
+            current_payout = round(1 / (blue_sum / totalbets), 1)
+            if current_payout > 100:
+                current_payout = 100.0
+        else:
+            current_payout = 2.0
+        return current_payout
+
+    elif blue_sum > red_sum:
+        if red_sum > 0:
+            current_payout = round(1 / (red_sum / totalbets), 1)
+            if current_payout > 100:
+                current_payout = 100.0
+        else:
+            current_payout = 2.0
+        return current_payout
+    else:
+        current_payout = 2.0
+        return current_payout
 
 def findmentionname(json_object, name):
     for entry in json_object['user']:
@@ -232,7 +301,7 @@ def updatemoney(message, json_object, winteam):
     for entry in json_object['user']:
 
         global payout
-        print("PAYOUT" + str(payout))
+        print("PAYOUT: " + str(payout))
 
         currentbet = entry['Current Bet']
         currentmoney = entry['Liandri']
@@ -359,7 +428,6 @@ def setallx(amount):
 
         with open('bank2.txt', 'w') as outfile:
             json.dump(bank, outfile)
-
 
 def givewelfare():
     for entry in bank['user']:
@@ -546,7 +614,27 @@ async def currentbet(message):
         response = 'You do not have a current bet ' + user
         await message.channel.send(response)
 
+@bot.command()
+async def bets(message):
+    red_sum = findsumredbets()
+    blue_sum = findsumbluebets()
 
+    if red_sum > blue_sum:
+        response = (("```"
+                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + str(findsumredbets()) +
+                     "\nBlue[" + str(findcurrentpayout()) + "x]: (" + str(findnumbluebets()) + ") " + str(findsumbluebets())) + "```")
+        await message.channel.send(response)
+
+    elif blue_sum > red_sum:
+        response = (("```"
+                    "Red [" + str(findcurrentpayout()) + "x]: (" + str(findnumredbets()) + ") " + str(findsumredbets()) +
+                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + str(findsumbluebets())) + "```")
+        await message.channel.send(response)
+    else:
+        response = (("```"
+                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + str(findsumredbets()) +
+                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + str(findsumbluebets())) + "```")
+        await message.channel.send(response)
 @bot.command()
 @commands.has_role("Active Members")
 async def give(message, amount, target):
@@ -635,14 +723,21 @@ async def openbets(message):
 
     lessteam = None
 
-    if betting == 0:
+    ### Check for any current bets
+    sumcurrentbets = 0
+    for entry in bank['user']:
+        currentbet = entry['Current Bet']
+        sumcurrentbets += currentbet
+        print("sum current bets: " + str(sumcurrentbets))
+
+    if betting == 0 and sumcurrentbets == 0:
 
         betting = 1
-        response = 'Bets are open for the next 10 minutes!'
+        response = 'Bets are open for the next 5 minutes!'
         await message.channel.send(response)
 
 
-        await asyncio.sleep(480)
+        await asyncio.sleep(180)
         #test below
         #await asyncio.sleep(8)
 
@@ -701,79 +796,144 @@ async def openbets(message):
 
         numbluebets = len(currentbluebets)
 
-        if len(currentredpercents) > 0:
-            totalredpercentage = sum(currentredpercents) / len(currentredpercents)
-            print(totalredpercentage)
-        else:
-            totalredpercentage = 1
+        red_sum = findsumredbets()
+        blue_sum = findsumbluebets()
+        totalbets = red_sum + blue_sum
 
-        if len(currentbluepercents) > 0:
-            totalbluepercentage = sum(currentbluepercents) / len(currentbluepercents)
-            print(totalbluepercentage)
-        else:
-            totalbluepercentage = 1
+        if red_sum > blue_sum:
+            if blue_sum > 0:
+                payout = round(1 / (blue_sum / totalbets), 1)
+                if payout > 100:
+                    payout = 100.0
+            else:
+                payout = 2.0
 
-        #calculates the payout based on bets against other team
-
-        if numredbets > numbluebets:
-            divide = numbluebets / numredbets
-            prepayout = 1 - divide
-
-            payout = prepayout * (multiplier)
-
-            extrapayout = payout - 2
-            payout = 2 + (extrapayout * totalbluepercentage)
-            print('PAYOUT ' + str(payout))
-
-            payout = round(payout, 1)
-
-            lessteam = "blue"
-
-        #was elif
-        if numbluebets > numredbets:
-            divide = numredbets / numbluebets
-            prepayout = 1 - divide
-
-            payout = prepayout * (multiplier)
-
-            extrapayout = payout - 2
-            payout = 2 + (extrapayout * totalredpercentage)
-            print('PAYOUT ' + str(payout))
-
-            payout = round(payout, 1)
-
-            lessteam = "red"
-
-        if lessteam == "red":
-
-            response = '**[' +str(numredbets) + ']**' + ' **[' + str(payout) + 'x]** **Current red bets:** ' + betredstring
-            await message.channel.send(response)
-
-            response = '**[' + str(numbluebets) + ']**' + ' **[2.0x]** **Current blue bets:** ' + betbluestring
-            await message.channel.send(response)
-
-        elif lessteam == "blue":
-
-            response = '**[' +str(numredbets) + ']**' + ' **[2.0x]**' + ' **Current red bets:** ' + betredstring
+            response = '**[' + str(numredbets) + ']**' + ' **[2.0x]**' + ' **Current red bets:** ' + betredstring
             await message.channel.send(response)
 
             response = '**[' + str(numbluebets) + ']**' + ' **[' + str(payout) + 'x]** **Current blue bets:** ' + betbluestring
             await message.channel.send(response)
 
+            lessteam = "blue"
+
+        elif blue_sum > red_sum:
+            if red_sum > 0:
+                payout = round(1 / (red_sum / totalbets), 1)
+                if payout > 100:
+                    payout = 100.0
+            else:
+                payout = 2.0
+
+
+            response = '**[' + str(numredbets) + ']**' + ' **[' + str(payout) + 'x]** **Red bets:** ' + betredstring
+            await message.channel.send(response)
+
+            response = '**[' + str(numbluebets) + ']**' + ' **[2.0x]** **Blue bets:** ' + betbluestring
+            await message.channel.send(response)
+
+            lessteam = "red"
+
         else:
-
-            response = '**[' + str(numredbets) + ']** **Current red bets:** ' + betredstring
+            payout = 2
+            response = '**[' +str(numredbets) + ']**' + ' **[2.0x]**' + ' **Current red bets:** ' + betredstring
             await message.channel.send(response)
 
-            response = '**[' + str(numbluebets) + ']** **Current blue bets:** ' + betbluestring
+            response = '**[' + str(numbluebets) + ']**' + ' **[2.0x]** **Blue bets:** ' + betbluestring
             await message.channel.send(response)
 
 
+        # calculates the payout based on bets against other team
+        # old method
+
+        # if len(currentredpercents) > 0:
+        #     totalredpercentage = sum(currentredpercents) / len(currentredpercents)
+        # else:
+        #     totalredpercentage = 1
+        #
+        # if len(currentbluepercents) > 0:
+        #     totalbluepercentage = sum(currentbluepercents) / len(currentbluepercents)
+        #     print(totalbluepercentage)
+        # else:
+        #     totalbluepercentage = 1
+        #
+        # if numredbets > numbluebets:
+        #     divide = numbluebets / numredbets
+        #     prepayout = 1 - divide
+        #
+        #     payout = prepayout * (multiplier)
+        #
+        #     extrapayout = payout - 2
+        #     payout = 2 + (extrapayout * totalbluepercentage)
+        #     print('PAYOUT ' + str(payout))
+        #
+        #     payout = round(payout, 1)
+        #
+        #     lessteam = "blue"
+        #
+        # #was elif
+        # if numbluebets > numredbets:
+        #     divide = numredbets / numbluebets
+        #     prepayout = 1 - divide
+        #
+        #     payout = prepayout * (multiplier)
+        #
+        #     extrapayout = payout - 2
+        #     payout = 2 + (extrapayout * totalredpercentage)
+        #     print('PAYOUT ' + str(payout))
+        #
+        #     payout = round(payout, 1)
+        #
+        #     lessteam = "red"
+        #
+        # if lessteam == "red":
+        #
+        #     response = '**[' +str(numredbets) + ']**' + ' **[' + str(payout) + 'x]** **Red bets:** ' + betredstring
+        #     await message.channel.send(response)
+        #
+        #     response = '**[' + str(numbluebets) + ']**' + ' **[2.0x]** **Blue bets:** ' + betbluestring
+        #     await message.channel.send(response)
+        #
+        # elif lessteam == "blue":
+        #
+        #     response = '**[' +str(numredbets) + ']**' + ' **[2.0x]**' + ' **Current red bets:** ' + betredstring
+        #     await message.channel.send(response)
+        #
+        #     response = '**[' + str(numbluebets) + ']**' + ' **[' + str(payout) + 'x]** **Current blue bets:** ' + betbluestring
+        #     await message.channel.send(response)
+        #
+        # else:
+        #
+        #     response = '**[' + str(numredbets) + ']** **Current red bets:** ' + betredstring
+        #     await message.channel.send(response)
+        #
+        #     response = '**[' + str(numbluebets) + ']** **Current blue bets:** ' + betbluestring
+        #     await message.channel.send(response)
+
+    elif sumcurrentbets > 0:
+        response = 'There is a current bet.'
+        await message.channel.send(response)
     else:
         response = 'Bets are already open.'
         await message.channel.send(response)
 
     betting = 0
+
+
+@bot.command()
+@commands.has_permissions(manage_messages=True)
+async def redbets(message):
+
+    response = 'red bets: ' + "("+str(findnumredbets()) + ") " + str(findsumredbets())
+    await message.channel.send(response)
+
+@bot.command()
+@commands.has_permissions(manage_messages=True)
+async def bluebets(message):
+
+    response = 'blue bets: ' + "("+str(findnumbluebets()) + ") " + str(findsumbluebets())
+    await message.channel.send(response)
+
+
 # Closes betting and applies winnings or losses
 
 @bot.command()
@@ -803,6 +963,9 @@ async def bet(message, arg, team):
 
     betteam = team
 
+    sumblue = findsumbluebets()
+    sumred = findsumredbets()
+
     if userliandri is None:
 
         response = 'You have not registered $register.'
@@ -814,12 +977,22 @@ async def bet(message, arg, team):
             if betting == 1 and userliandri >= betamount:
                 author = message.author
                 user = author.mention
-                response = user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam
                 updatecurrentbet(bank, str(author), betamount)
                 updatecurrentteam(bank, str(author), betteam)
                 updatebetpercentage(bank, str(author), betamount)
                 print(bank)
-                await message.channel.send(response)
+
+                if sumblue > sumred:
+                    response = (user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam +
+                                " (" + str(findcurrentpayout()) + "x/2.0x)")
+                    await message.channel.send(response)
+                elif sumred > sumblue:
+                    response = (user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam +
+                                " (2.0x/" + str(findcurrentpayout()) + "x)")
+                    await message.channel.send(response)
+                else:
+                    response = user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam
+                    await message.channel.send(response)
 
             elif betting == 1 and userliandri < betamount:
                 response = 'You do not have enough Liandri for this bet.'
