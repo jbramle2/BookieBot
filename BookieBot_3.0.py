@@ -1,6 +1,8 @@
 # BookieBot.py
 import os
 import json
+import random
+
 import discord
 import asyncio
 import sys
@@ -733,21 +735,21 @@ async def openbets(message):
     if betting == 0 and sumcurrentbets == 0:
 
         betting = 1
-        response = 'Bets are open for the next 5 minutes!'
+        response = 'Bets are open!'
         await message.channel.send(response)
 
 
-        await asyncio.sleep(180)
+        await asyncio.sleep(random.randint(160, 180))
         #test below
         #await asyncio.sleep(8)
 
         if betting == 0:
             return
 
-        response = 'Bets close in 2 minutes!!'
+        response = 'Bets close soon, last call!!'
         await message.channel.send(response)
         #uncomment
-        await asyncio.sleep(120)
+        await asyncio.sleep(random.randint(20, 120))
 
         if betting == 0:
             return
