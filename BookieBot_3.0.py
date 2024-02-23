@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = ''
+TOKEN = 'NzY4OTYxMjA3OTQ3NjI0NDQ4.GV_q3e.lLkVpA5AdFhkRrl-2RZmFpighLW0F5WXFV4cm8'
 client = discord.Client(intents=discord.Intents.default())
 # = discord.Client()
 intents = discord.Intents.default()
@@ -517,7 +517,7 @@ async def liandri(message):
     userliandri = findmoney(bank, str(author))
 
     if userliandri:
-        response = f'You currently have {userliandri:,} Liandri f{user}'
+        response = f'You currently have {userliandri:,} Liandri {user}'
         await message.channel.send(response)
     elif userliandri == 0:
         response = 'You have used all of your liandri for this week ' + user
@@ -703,7 +703,7 @@ async def give(message, amount, target):
                     print(userliandri)
                     print(targetliandri)
 
-                    response = user + ' has given ' + str(targetmention) + ' ' + 'f{amount:,}' + ' liandri'
+                    response = user + ' has given ' + str(targetmention) + ' ' + amount + ' liandri'
                     await message.channel.send(response)
 
 
