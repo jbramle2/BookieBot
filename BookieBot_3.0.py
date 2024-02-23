@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = ''
+TOKEN = 'NzY4OTYxMjA3OTQ3NjI0NDQ4.X5IE7g.4UgQt--VxtEonEEyKjNYmrx2Klw'
 client = discord.Client(intents=discord.Intents.default())
 # = discord.Client()
 intents = discord.Intents.default()
@@ -631,12 +631,12 @@ async def bets(message):
     elif blue_sum > red_sum:
         response = (("```"
                     "Red [" + str(findcurrentpayout()) + "x]: (" + str(findnumredbets()) + ") " + red_sum_str +
-                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```")
+                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```"))
         await message.channel.send(response)
     else:
         response = (("```"
                     "Red [2.0x]: (" + str(findnumredbets()) + ") " + red_sum_str +
-                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```")
+                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```"))
         await message.channel.send(response)
 
 @bot.command()
@@ -768,7 +768,7 @@ async def openbets(message):
         currentbluepercents = []
 
         for x in bank['user']:
-            current_bet = f'{x['Current Bet']:,}'
+            current_bet = x['Current Bet']
             mention_name = str(x['mentionname'])
             if current_bet > 0 and x['Current team'] == 'red':
                 currentredbets.append(mention_name + '(' + current_bet + ')')
