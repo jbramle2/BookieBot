@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = 'NzY4OTYxMjA3OTQ3NjI0NDQ4.GV_q3e.lLkVpA5AdFhkRrl-2RZmFpighLW0F5WXFV4cm8'
+TOKEN = ''
 client = discord.Client(intents=discord.Intents.default())
 # = discord.Client()
 intents = discord.Intents.default()
@@ -489,22 +489,6 @@ async def register(message):
         response = 'You have received 100 Liandri' + ' ' + user
         await message.channel.send(response)
 
-
-@bot.command()
-async def weekly(message):
-
-    author = message.author
-    user = author.mention
-
-    response = 'This command is outdated and you should receive 100 Liandri every Sunday.'
-
-    await message.channel.send(response)
-
-    response = 'Use $register to register for betting' + ' ' + user
-
-    await message.channel.send(response)
-
-
 #
 # Checks Lirandri for self
 #
@@ -517,13 +501,13 @@ async def liandri(message):
     userliandri = findmoney(bank, str(author))
 
     if userliandri:
-        response = f'You currently have {userliandri:,} Liandri {user}'
+        response = f'You currently have banked {userliandri:,} Liandri {user}'
         await message.channel.send(response)
     elif userliandri == 0:
         response = 'You have used all of your liandri for this week ' + user
         await message.channel.send(response)
     else:
-        response = 'You have not registered your discord account. Type $register' + user
+        response = 'You have not registered your discord account $register' + user
         await message.channel.send(response)
 
 @bot.command()
@@ -544,7 +528,7 @@ async def total(message):
         response = 'You have used all of your liandri for this week ' + user
         await message.channel.send(response)
     else:
-        response = 'You have not registered your discord account. Type $register' + user
+        response = 'You have not registered your discord account $register' + user
         await message.channel.send(response)
 
 @bot.command()
@@ -567,9 +551,10 @@ async def mystats(message):
     index = index + 1
     #######
 
-    userliandri = f'{findmoney(bank, str(author)):,}'
+    userliandri = findmoney(bank, str(author))
 
     usertotalwins = findtotalwins(bank, str(author))
+
     usertotallosses = findtotallosses(bank, str(author))
 
     if usertotalwins > 0:
@@ -580,13 +565,14 @@ async def mystats(message):
 
 
 
-    userwinnings = f'{findwinnings(bank, str(author)):,}'
-    userlosses = f'{findlosses(bank, str(author)):,}'
+    userwinnings = findwinnings(bank, str(author))
+
+    userlosses = findlosses(bank, str(author))
 
     userbankruptcies = findbankruptcies(bank, str(author))
 
-    usergiven = f'{findgiven(bank, str(author)):,}'
-    userreceived = f'{findreceived(bank, str(author)):,}'
+    usergiven = findgiven(bank, str(author))
+    userreceived = findreceived(bank, str(author))
 
     response = user + ':' + " Rank: " + str(index) +  " | Liandri: " + str(userliandri) + " | Bets Won: " \
                + str(usertotalwins) + " | Bets Lost: " \
@@ -602,10 +588,10 @@ async def currentbet(message):
     author = message.author
     user = author.mention
 
-    userbet = f'{findcurrentbet(bank, str(author)):,}'
+    userbet = findcurrentbet(bank, str(author))
 
     if userbet:
-        response = 'Your current bet is ' + userbet + ' Liandri ' + user
+        response = 'Your current bet is ' + str(userbet) + ' Liandri ' + user
         await message.channel.send(response)
     elif userliandri == 0:
         response = 'You do not have a current bet ' + user
@@ -619,26 +605,22 @@ async def bets(message):
     red_sum = findsumredbets()
     blue_sum = findsumbluebets()
 
-    red_sum_str = f'{red_sum:,}'
-    blue_sum_str = f'{blue_sum:,}'
-
     if red_sum > blue_sum:
-        response = ("```"
-                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + red_sum_str +
-                     "\nBlue[" + str(findcurrentpayout()) + "x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```")
+        response = (("```"
+                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + str(findsumredbets()) +
+                     "\nBlue[" + str(findcurrentpayout()) + "x]: (" + str(findnumbluebets()) + ") " + str(findsumbluebets())) + "```")
         await message.channel.send(response)
 
     elif blue_sum > red_sum:
         response = (("```"
-                    "Red [" + str(findcurrentpayout()) + "x]: (" + str(findnumredbets()) + ") " + red_sum_str +
-                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```"))
+                    "Red [" + str(findcurrentpayout()) + "x]: (" + str(findnumredbets()) + ") " + str(findsumredbets()) +
+                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + str(findsumbluebets())) + "```")
         await message.channel.send(response)
     else:
         response = (("```"
-                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + red_sum_str +
-                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```"))
+                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + str(findsumredbets()) +
+                     "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + str(findsumbluebets())) + "```")
         await message.channel.send(response)
-
 @bot.command()
 @commands.has_role("Active Members")
 async def give(message, amount, target):
@@ -768,13 +750,14 @@ async def openbets(message):
         currentbluepercents = []
 
         for x in bank['user']:
-            current_bet = x['Current Bet']
-            mention_name = str(x['mentionname'])
-            if current_bet > 0 and x['Current team'] == 'red':
-                currentredbets.append(mention_name + '(' + current_bet + ')')
+            if x['Current Bet'] > 0 and x['Current team'] == 'red':
+
+                currentredbets.append(str(x['mentionname']) + '(' + str(x['Current Bet']) + ')')
                 currentredpercents.append(x['Current Bet Percentage'])
-            elif current_bet > 0 and x['Current team'] == 'blue':
-                currentbluebets.append(mention_name + '(' + current_bet + ')')
+
+            elif x['Current Bet'] > 0 and x['Current team'] == 'blue':
+
+                currentbluebets.append(str(x['mentionname']) + '(' + str(x['Current Bet']) + ')')
                 currentbluepercents.append(x['Current Bet Percentage'])
 
         print('PERCENTS')
@@ -925,15 +908,15 @@ async def openbets(message):
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def redbets(message):
-    sum = f'{str(findsumredbets()):,}'
-    response = 'Red bets: ' + "("+str(findnumredbets()) + ") " + sum
+
+    response = 'red bets: ' + "("+str(findnumredbets()) + ") " + str(findsumredbets())
     await message.channel.send(response)
 
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def bluebets(message):
-    sum = f'{str(findsumredbets()):,}'
-    response = 'Blue bets: ' + "("+str(findnumbluebets()) + ") " + sum
+
+    response = 'blue bets: ' + "("+str(findnumbluebets()) + ") " + str(findsumbluebets())
     await message.channel.send(response)
 
 
@@ -986,15 +969,15 @@ async def bet(message, arg, team):
                 print(bank)
 
                 if sumblue > sumred:
-                    response = (user + ' has placed a ' + f'{betamount:,}' + ' Liandri bet for ' + betteam +
+                    response = (user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam +
                                 " (" + str(findcurrentpayout()) + "x/2.0x)")
                     await message.channel.send(response)
                 elif sumred > sumblue:
-                    response = (user + ' has placed a ' + f'{betamount:,}' + ' Liandri bet for ' + betteam +
+                    response = (user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam +
                                 " (2.0x/" + str(findcurrentpayout()) + "x)")
                     await message.channel.send(response)
                 else:
-                    response = user + ' has placed a ' + f'{betamount:,}' + ' Liandri bet for ' + betteam
+                    response = user + ' has placed a ' + str(betamount) + ' Liandri bet for ' + betteam
                     await message.channel.send(response)
 
             elif betting == 1 and userliandri < betamount:
