@@ -629,13 +629,11 @@ async def bets(message):
         await message.channel.send(response)
 
     elif blue_sum > red_sum:
-        response = (("```"
-                    "Red [" + str(findcurrentpayout()) + "x]: (" + str(findnumredbets()) + ") " + red_sum_str +
+        response = ("```Red [" + str(findcurrentpayout()) + "x]: (" + str(findnumredbets()) + ") " + red_sum_str +
                      "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```")
         await message.channel.send(response)
     else:
-        response = (("```"
-                    "Red [2.0x]: (" + str(findnumredbets()) + ") " + red_sum_str +
+        response = ("```Red [2.0x]: (" + str(findnumredbets()) + ") " + red_sum_str +
                      "\nBlue[2.0x]: (" + str(findnumbluebets()) + ") " + blue_sum_str + "```")
         await message.channel.send(response)
 
