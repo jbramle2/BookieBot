@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = 'NzY4OTYxMjA3OTQ3NjI0NDQ4.X5IE7g.4UgQt--VxtEonEEyKjNYmrx2Klw'
+TOKEN = ''
 client = discord.Client(intents=discord.Intents.default())
 # = discord.Client()
 intents = discord.Intents.default()
