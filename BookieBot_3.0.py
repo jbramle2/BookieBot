@@ -2,13 +2,11 @@
 import os
 import json
 import random
-
 import discord
 import asyncio
 import sys
 from discord.ext import commands
 from itertools import islice
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -827,74 +825,6 @@ async def openbets(message):
             response = '**[' + str(numbluebets) + ']**' + ' **[2.0x]** **Blue bets:** ' + betbluestring
             await message.channel.send(response)
 
-
-        # calculates the payout based on bets against other team
-        # old method
-
-        # if len(currentredpercents) > 0:
-        #     totalredpercentage = sum(currentredpercents) / len(currentredpercents)
-        # else:
-        #     totalredpercentage = 1
-        #
-        # if len(currentbluepercents) > 0:
-        #     totalbluepercentage = sum(currentbluepercents) / len(currentbluepercents)
-        #     print(totalbluepercentage)
-        # else:
-        #     totalbluepercentage = 1
-        #
-        # if numredbets > numbluebets:
-        #     divide = numbluebets / numredbets
-        #     prepayout = 1 - divide
-        #
-        #     payout = prepayout * (multiplier)
-        #
-        #     extrapayout = payout - 2
-        #     payout = 2 + (extrapayout * totalbluepercentage)
-        #     print('PAYOUT ' + str(payout))
-        #
-        #     payout = round(payout, 1)
-        #
-        #     lessteam = "blue"
-        #
-        # #was elif
-        # if numbluebets > numredbets:
-        #     divide = numredbets / numbluebets
-        #     prepayout = 1 - divide
-        #
-        #     payout = prepayout * (multiplier)
-        #
-        #     extrapayout = payout - 2
-        #     payout = 2 + (extrapayout * totalredpercentage)
-        #     print('PAYOUT ' + str(payout))
-        #
-        #     payout = round(payout, 1)
-        #
-        #     lessteam = "red"
-        #
-        # if lessteam == "red":
-        #
-        #     response = '**[' +str(numredbets) + ']**' + ' **[' + str(payout) + 'x]** **Red bets:** ' + betredstring
-        #     await message.channel.send(response)
-        #
-        #     response = '**[' + str(numbluebets) + ']**' + ' **[2.0x]** **Blue bets:** ' + betbluestring
-        #     await message.channel.send(response)
-        #
-        # elif lessteam == "blue":
-        #
-        #     response = '**[' +str(numredbets) + ']**' + ' **[2.0x]**' + ' **Current red bets:** ' + betredstring
-        #     await message.channel.send(response)
-        #
-        #     response = '**[' + str(numbluebets) + ']**' + ' **[' + str(payout) + 'x]** **Current blue bets:** ' + betbluestring
-        #     await message.channel.send(response)
-        #
-        # else:
-        #
-        #     response = '**[' + str(numredbets) + ']** **Current red bets:** ' + betredstring
-        #     await message.channel.send(response)
-        #
-        #     response = '**[' + str(numbluebets) + ']** **Current blue bets:** ' + betbluestring
-        #     await message.channel.send(response)
-
     elif sumcurrentbets > 0:
         response = 'There is a current bet.'
         await message.channel.send(response)
@@ -1061,38 +991,28 @@ async def rank(message):
 @bot.command()
 async def standings(message, totalnum=None):
 
-    sortedarray = []
     sorted = sortbymoney()
+    response = '**Liandri Season Totals:** '
 
     for x in sorted['user']:
-        sortedarray.append(str(x['username']) + '(' + str(x['Liandri']) + ')')
+        response += (f'{x["username"]} ({x["Liandri"]:,}) :heavy_dollar_sign: ')
 
-    redbigbetstring = sortedarray
-
-    betredstring = str(redbigbetstring).replace(',', ':heavy_dollar_sign:')
-    betredstring = betredstring.replace('[', '')
-    betredstring = betredstring.replace(']', '')
-    betredstring = betredstring.replace("'", '')
-
-    print(totalnum)
-    print(type(totalnum))
+    print(response)
 
     if totalnum is None:
-        poop = 10
+        num_To_Display = 10
     else:
-        poop = int(totalnum)
+        num_To_Display = int(totalnum)
 
-    test = betredstring.split(":heavy_dollar_sign:")[:poop]
+    standings = response.split(":heavy_dollar_sign:")[:num_To_Display]
 
-    test = str(test).replace(',', ':heavy_dollar_sign:')
-    test = test.replace('[', '')
-    test = test.replace(']', '')
-    test = test.replace("'", '')
+    standings = str(standings).replace(" ', '", ' :heavy_dollar_sign: ')
+    standings = standings.replace('[', '')
+    standings = standings.replace(']', '')
+    standings = standings.replace("'", '')
+    print(standings)
 
-    print(betredstring)
-    print(test)
-    response = '**Liandri Season Totals:** ' + str(test)
-    await message.channel.send(response)
+    await message.channel.send(str(standings))
 
 
 @bot.command()
