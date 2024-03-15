@@ -11,7 +11,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = ''
+with open('token.txt', 'r') as t:
+    TOKEN = t.read()
+
 client = discord.Client(intents=discord.Intents.default())
 # = discord.Client()
 intents = discord.Intents.default()
@@ -181,8 +183,8 @@ def findcurrentpayout():
     if red_sum > blue_sum:
         if blue_sum > 0:
             current_payout = round(1 / (blue_sum / totalbets), 1)
-            if current_payout > 100:
-                current_payout = 100.0
+            if current_payout > 1000000:
+                current_payout = 1000000
         else:
             current_payout = 2.0
         return current_payout
@@ -190,8 +192,8 @@ def findcurrentpayout():
     elif blue_sum > red_sum:
         if red_sum > 0:
             current_payout = round(1 / (red_sum / totalbets), 1)
-            if current_payout > 100:
-                current_payout = 100.0
+            if current_payout > 1000000:
+                current_payout = 1000000
         else:
             current_payout = 2.0
         return current_payout
@@ -787,8 +789,8 @@ async def openbets(message):
         if red_sum > blue_sum:
             if blue_sum > 0:
                 payout = round(1 / (blue_sum / totalbets), 1)
-                if payout > 100:
-                    payout = 100.0
+                if payout > 1000000:
+                    payout = 1000000
             else:
                 payout = 2.0
 
@@ -803,8 +805,8 @@ async def openbets(message):
         elif blue_sum > red_sum:
             if red_sum > 0:
                 payout = round(1 / (red_sum / totalbets), 1)
-                if payout > 100:
-                    payout = 100.0
+                if payout > 1000000:
+                    payout = 1000000
             else:
                 payout = 2.0
 
